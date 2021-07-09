@@ -51,7 +51,7 @@ require (
 	github.com/urfave/cli v1.22.4
 	github.com/vinyldns/go-vinyldns v0.0.0-20200917153823-148a5f6b8f14
 	github.com/vultr/govultr/v2 v2.0.0
-	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
@@ -59,4 +59,5 @@ require (
 	gopkg.in/ns1/ns1-go.v2 v2.4.4
 	gopkg.in/square/go-jose.v2 v2.5.1
 	gopkg.in/yaml.v2 v2.4.0
+	software.sslmate.com/src/go-pkcs12 v0.0.0-20210222215041-dec221a1a07f
 )
