@@ -91,9 +91,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func Test_getMainDomain(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		domain   string
-		expected string
+		desc               string
+		domain             string
+		specifiedSubdomain string
+		expected           string
 	}{
 		{
 			desc:     "empty",
@@ -135,6 +136,12 @@ func Test_getMainDomain(t *testing.T) {
 			domain:   "my.sub.sub",
 			expected: "sub",
 		},
+		{
+			desc:               "specify sub domain",
+			domain:             "example.org",
+			specifiedSubdomain: "my-subdomain",
+			expected:           "my-subdomain",
+		},
 	}
 
 	for _, test := range testCases {
@@ -142,8 +149,40 @@ func Test_getMainDomain(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			wDomain := getMainDomain(test.domain)
+			wDomain := getMainDomain(test.domain, test.specifiedSubdomain)
 			assert.Equal(t, test.expected, wDomain)
+		})
+	}
+}
+
+func Test_jsonToSubdomainMap(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		json     string
+		expected map[string]string
+	}{
+		{
+			desc: "empty",
+		},
+		{
+			desc:     "simple",
+			json:     "{\"www.example.com\":\"my-subdomain\"}",
+			expected: map[string]string{"www.example.com": "my-subdomain"},
+		},
+		{
+			desc:     "wildcard",
+			json:     "{\"*.example.com\":\"my-subdomain\"}",
+			expected: map[string]string{"example.com": "my-subdomain"},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			subDomainMap := jsonToSubdomainMap(test.json)
+			assert.Equal(t, test.expected, subDomainMap)
 		})
 	}
 }

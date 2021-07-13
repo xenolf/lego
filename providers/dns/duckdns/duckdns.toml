@@ -6,7 +6,12 @@ Since = "v0.5.0"
 
 Example = '''
 DUCKDNS_TOKEN=xxxxxx \
-lego --email myemail@example.com --dns duckdns --domains my.example.org run
+lego --email myemail@example.com --dns duckdns --domains my-subdomain.duckdns.org run
+
+#own domain name,after set CNAME record _acme-challenge.example.com -> my-subdomain.duckdns.org
+DUCKDNS_TOKEN=xxxxxx \
+DUCKDNS_SUBDOMAIN_MAP='{"*.example.com":"my-subdomain"}' \
+lego --email myemail@example.com --dns duckdns --domains *.example.com run
 '''
 
 [Configuration]

@@ -3,9 +3,11 @@
 package duckdns
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -22,6 +24,7 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+	EnvSubDomainMap       = envNamespace + "SUBDOMAIN_MAP"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -31,6 +34,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	SequenceInterval   time.Duration
 	HTTPClient         *http.Client
+	SubDomainMap       map[string]string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -42,6 +46,7 @@ func NewDefaultConfig() *Config {
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
+		SubDomainMap: jsonToSubdomainMap(env.GetOrDefaultString(EnvSubDomainMap, "")),
 	}
 }
 
@@ -98,4 +103,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
+}
+
+func jsonToSubdomainMap(text string) map[string]string {
+	var subDomainMap map[string]string
+	err := json.Unmarshal([]byte(text), &subDomainMap)
+	if err != nil {
+		return nil
+	}
+	for key, value := range subDomainMap {
+		if strings.HasPrefix(key, "*.") {
+			subDomainMap[key[2:]] = value
+			delete(subDomainMap, key)
+		}
+	}
+	return subDomainMap
 }
