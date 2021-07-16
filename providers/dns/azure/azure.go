@@ -33,6 +33,7 @@ const (
 	EnvTenantID         = envNamespace + "TENANT_ID"
 	EnvClientID         = envNamespace + "CLIENT_ID"
 	EnvClientSecret     = envNamespace + "CLIENT_SECRET"
+	EnvZoneName         = envNamespace + "ZONE_NAME"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -169,9 +170,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, fqdn)
-	if err != nil {
-		return fmt.Errorf("azure: %w", err)
+    zone, err := d.getHostedZoneID(ctx, fqdn)
+    if err != nil {
+            return fmt.Errorf("azure: %w", err)
 	}
 
 	rsc := dns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
@@ -224,9 +225,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, fqdn)
-	if err != nil {
-		return fmt.Errorf("azure: %w", err)
+
+    zone, err := d.getHostedZoneID(ctx, fqdn)
+    if err != nil {
+            return fmt.Errorf("azure: %w", err)
 	}
 
 	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
@@ -242,6 +244,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 // Checks that azure has a zone for this domain name.
 func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string, error) {
+	if env.GetOrFile(EnvZoneName) != "" {
+	    return env.GetOrFile(EnvZoneName), nil
+	}
+
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err
